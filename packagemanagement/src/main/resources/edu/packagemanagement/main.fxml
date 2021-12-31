@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="753.0" prefWidth="1238.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.packagemanagement.MainController">
+   <top>
+      <MenuBar BorderPane.alignment="CENTER">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="fasle" onAction="#newProject" text="New" />
+              <MenuItem mnemonicParsing="fasle" onAction="#openProject" text="Open Project" />
+              <MenuItem mnemonicParsing="false" text="Close" />
+              </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   <left>
+      <VBox fx:id="vboxexplorer" prefHeight="721.0" prefWidth="229.0" style="-fx-background-color: BFDDE7; -fx-border-color: red; -fx-border-width: 2px;" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" fx:id="viewinfobt" onAction="#showinfoP" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="view Information ">
+               <VBox.margin>
+                  <Insets bottom="10.0" top="10.0" />
+               </VBox.margin>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#updateProject" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="Update project">
+               <VBox.margin>
+                  <Insets bottom="10.0" top="10.0" />
+               </VBox.margin>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#deleteDp" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="Remove dependence">
+               <VBox.margin>
+                  <Insets bottom="10.0" top="10.0" />
+               </VBox.margin>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#addDp" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="Add dependence">
+               <VBox.margin>
+                  <Insets bottom="10.0" top="10.0" />
+               </VBox.margin>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#changeversion" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="Change version Library">
+               <VBox.margin>
+                  <Insets bottom="10.0" top="10.0" />
+               </VBox.margin>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#deleteProject" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="Delete Project">
+               <VBox.margin>
+                  <Insets bottom="10.0" top="10.0" />
+               </VBox.margin>
+            </Button>
+         </children></VBox>
+   </left>
+   <center>
+      <VBox fx:id="display" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+         <children>
+            <StackPane fx:id="displaystackpane" prefHeight="721.0" prefWidth="1227.0" />
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

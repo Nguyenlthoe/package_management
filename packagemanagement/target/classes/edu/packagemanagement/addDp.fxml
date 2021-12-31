@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="302.0" prefWidth="465.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label layoutX="16.0" layoutY="14.0" prefHeight="35.0" prefWidth="118.0" text="Name package:" />
+      <Label layoutX="16.0" layoutY="106.0" prefHeight="35.0" prefWidth="319.0" text="Version:" />
+      <TextField fx:id="namepk" layoutX="16.0" layoutY="57.0" prefHeight="35.0" prefWidth="319.0" />
+      <TextField fx:id="versionpk" layoutX="16.0" layoutY="151.0" prefHeight="35.0" prefWidth="118.0" />
+      <Label layoutX="137.0" layoutY="152.0" prefHeight="35.0" prefWidth="292.0" text="(not fill if you want install lastest version)" textFill="#cd163a" />
+      <Button layoutX="359.0" layoutY="248.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="70.0" styleClass="button3" text="ADD" />
+   </children>
+</AnchorPane>
