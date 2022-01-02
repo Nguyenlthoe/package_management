@@ -17,17 +17,20 @@
             <items>
               <MenuItem mnemonicParsing="fasle" onAction="#newProject" text="New" />
               <MenuItem mnemonicParsing="fasle" onAction="#openProject" text="Open Project" />
+                  <MenuItem mnemonicParsing="false" text="Rename" />
               <MenuItem mnemonicParsing="false" text="Close" />
               </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
+          <Menu mnemonicParsing="false" text="Setting">
             <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
+                  <MenuItem mnemonicParsing="false" text="Change maven local" />
+              <MenuItem mnemonicParsing="false" text="Change gradle local" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
               <MenuItem mnemonicParsing="false" text="About" />
+                  <MenuItem mnemonicParsing="false" onAction = "#exitandlogout" text="Exit and logout" />
             </items>
           </Menu>
         </menus>
@@ -36,7 +39,7 @@
    <left>
       <VBox fx:id="vboxexplorer" prefHeight="721.0" prefWidth="229.0" style="-fx-background-color: BFDDE7; -fx-border-color: red; -fx-border-width: 2px;" BorderPane.alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" fx:id="viewinfobt" onAction="#showinfoP" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="view Information ">
+            <Button fx:id="viewinfobt" mnemonicParsing="false" onAction="#showinfoP" prefHeight="45.0" prefWidth="225.0" styleClass="btn" text="view Information ">
                <VBox.margin>
                   <Insets bottom="10.0" top="10.0" />
                </VBox.margin>

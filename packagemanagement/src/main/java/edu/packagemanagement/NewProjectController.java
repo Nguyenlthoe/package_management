@@ -13,6 +13,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 
+import edu.packagemanagement.model.IDE;
 import edu.packagemanagement.model.Library;
 import edu.packagemanagement.model.Project;
 import javafx.event.ActionEvent;
@@ -37,10 +38,15 @@ public class NewProjectController {
 		private TextField dirFileTF = new TextField();
 	@FXML
 		private TextField namePrjTF = new TextField();
+	@FXML
+		private TextField nameIdeTF = new TextField();
+	@FXML
+		private TextField versionIdeTF = new TextField();
 	private static StackPane displaystackpane = null;
+	//private static int userid;
 	private static VBox vboxexplorer1 = null;
 	private static PreparedStatement ptsm= null;
-	private static String selectproject = "select ID from Project where NameProject = ? and UserID = 1";
+	private static String selectproject;
 	private  String linktoprj = null;
 	@FXML
 	private void ChooseFile() {
@@ -56,6 +62,22 @@ public class NewProjectController {
 	}
 	@FXML
 	private void CreateProject() throws FileNotFoundException {
+		if(namePrjTF.getText().trim().equals("")) {
+			showerror("Please enter name of Project");
+			return ;
+		}
+		if(nameIdeTF.getText().trim().equals("")) {
+			showerror("Please enter name of IDE");
+			return ;
+		}
+		if(versionIdeTF.getText().trim().equals("")) {
+			showerror("Please enter version of IDE");
+			return ;
+		}
+		if(dirFileTF.getText().equals("")){
+			showerror("Please choose file manage dependency");
+			return ;
+		}
 		String dbURL = "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
 		Connection connect = null;
 		//Statement statement = null;
@@ -72,12 +94,7 @@ public class NewProjectController {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-//	    try {
-//			statement = connect.createStatement();
-//		} catch (SQLException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
+	    IDE nide = new IDE(nameIdeTF.getText().trim(), versionIdeTF.getText().trim(), connect);
 		ReadDependency readd = new ReadDependency();
 		TreeView<Library> newTree = null;
 		Project nPrj = null;
@@ -86,7 +103,7 @@ public class NewProjectController {
 		String path = dirFileTF.getText();
 		words = path.split("[.]");
 		if(words[words.length - 1].equals("json")) {
-			nPrj = new Project(namePrjTF.getText(),linktoprj, "NPM", connect);
+			nPrj = new Project(namePrjTF.getText(),linktoprj, "NPM", connect, nide.getIdIDE());
 			final TreeView<Library> newTree1 = readd.ReadNPM(nPrj, dirFileTF.getText(), connect);
 			newTree = newTree1;
 			newButton = new Button(namePrjTF.getText() + " (NPM)", new ImageView(new Image(new FileInputStream(new File("forder.png")))));
@@ -104,7 +121,7 @@ public class NewProjectController {
 
 			});
 		} else if (words[words.length - 1].equals("xml")) {
-			nPrj = new Project(namePrjTF.getText(),linktoprj, "MAVEN", connect);
+			nPrj = new Project(namePrjTF.getText(),linktoprj, "MAVEN", connect, nide.getIdIDE());
 			final TreeView<Library> newTree1 = readd.ReadMaven(nPrj, dirFileTF.getText(), connect);
 			newTree = newTree1;
 			newButton = new Button(namePrjTF.getText() + " (MAVEN)", new ImageView(new Image(new FileInputStream(new File("forder.png")))));
@@ -122,7 +139,7 @@ public class NewProjectController {
 
 			});
 		} else {
-			nPrj = new Project(namePrjTF.getText(),linktoprj, "GRADLE", connect);
+			nPrj = new Project(namePrjTF.getText(),linktoprj, "GRADLE", connect, nide.getIdIDE());
 			final TreeView<Library> newTree1 = readd.ReadGradle(nPrj, dirFileTF.getText(), connect);
 			newTree = newTree1;
 			newButton = new Button(namePrjTF.getText() + " (Gradle)", new ImageView(new Image(new FileInputStream(new File("forder.png")))));
@@ -176,6 +193,17 @@ public class NewProjectController {
 		duplicate.getStyleClass().add("info");
 		ndialog.getChildren().add(duplicate);
 		alert.getDialogPane().setContent(ndialog);
+		alert.showAndWait();
+	}
+	public static void setSelectproject(String userid) {
+		NewProjectController.selectproject = "select ID from Project where NameProject = ? and UserID = " + userid;
+	}
+	private void showerror(String a) {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setTitle("ERROR");
+		alert.setContentText(a);
+		alert.getDialogPane().getStyleClass().add("alert");
+		alert.getDialogPane().getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
 		alert.showAndWait();
 	}
 }

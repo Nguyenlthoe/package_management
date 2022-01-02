@@ -2,6 +2,7 @@ package edu.packagemanagement;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
@@ -11,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 
+import edu.packagemanagement.model.IDE;
 import edu.packagemanagement.model.Library;
 import edu.packagemanagement.model.Project;
 import javafx.fxml.FXML;
@@ -47,7 +49,9 @@ public class MainController {
 	static Stage mainstage;
 	private static String URL;
 	public static Project openproject = null;
+	public static IDE ide = null;
 	private boolean updatef = false;
+	private static int userid;
 	public static boolean updateP = false;
 	public static int countdp;
 	private Label infoPlabel = new Label();
@@ -97,7 +101,7 @@ public class MainController {
 		ChoiceDialog<Project> dialog = new ChoiceDialog<Project>();
 		// String dbURL =
 		// "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
-		String selectproject = "select * from Project where UserID = 1";
+		String selectproject = "select * from Project where UserID = " + this.userid;
 		Connection connect = null;
 
 		try {
@@ -411,6 +415,22 @@ public class MainController {
 							e.printStackTrace();
 						}
 					} else {
+						String pathname = openproject.getProjectInfo().trim();
+						try {
+							Process p = Runtime.getRuntime().exec("cmd /c gradle -q dependencies", null, new File(pathname));
+							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+							String line;
+							while (true) {
+								line = r.readLine();
+								if (line == null) {
+									break;
+								}
+								// System.out.println(line);
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 
 					}
 
@@ -734,7 +754,20 @@ public class MainController {
 		}
 
 	}
-
+	@FXML
+	private void exitandlogout() {
+		FileWriter fwt;
+		try {
+			fwt = new FileWriter(new File("user.txt"));
+			fwt.write("");
+			fwt.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Stage st = (Stage) display.getScene().getWindow();
+		st.close();
+	}
 	private void showerror(String a) {
 		Alert alert = new Alert(AlertType.ERROR);
 		alert.setTitle("ERROR");
@@ -781,5 +814,9 @@ public class MainController {
 
 	public static void setURL(String uRL) {
 		URL = uRL;
+	}
+
+	public static void setUserid(int userid) {
+		MainController.userid = userid;
 	}
 }

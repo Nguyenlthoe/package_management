@@ -9,6 +9,15 @@
 .btn:hover {
 	-fx-background-color: red;
 }
+.buttonlog {
+	-fx-font-family: "TIMES NEW ROMAN";
+	-fx-font-size: 18px;
+	-fx-background-color: #F85345;
+}
+.buttonlog:pressed {
+	-fx-background-color: #45F86F;
+}
+
 .tree{
 	-fx-font-size: 18px;
 	-fx-font-family: "TIMES NEW ROMAN";

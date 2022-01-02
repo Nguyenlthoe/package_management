@@ -11,10 +11,11 @@ public class Project {
 	private String dateCreate;
 	private String dateUpdate;
 	private String projectInfo;
+	private static int userid;
 	private String typeP;
 	ArrayList<String> idLibs = new ArrayList<String>();
 	private int idIDE;
-	
+
 	public void addLibDependency(String newid) {
 		this.idLibs.add(newid);
 	}
@@ -28,17 +29,17 @@ public class Project {
 		this.typeP = typeP;
 		this.idIDE = idIDE;
 	}
-	public Project(String name, String projectInfo, String typeP, Connection connect) {
+	public Project(String name, String projectInfo, String typeP, Connection connect, int idide) {
 		this.name = name;
 		this.projectInfo = projectInfo;
 		this.typeP = typeP;
-		this.idIDE = 1;
+		this.idIDE = idide;
 		String a = java.time.LocalDate.now() + "";
 		this.dateCreate = a.replace('-', '/');
 		this.dateUpdate = a.replace('-', '/');
-		String select = "select ID from Project where NameProject = '" + name + "' and UserID = 1";
+		String select = "select ID from Project where NameProject = '" + name + "' and UserID = " + this.userid;
 		String insert = "insert into Project \n values('" + name + "', '" + projectInfo + "', '"
-					+ typeP + "', 1 , '" + dateCreate + "', '" + dateUpdate + "', 1)";
+					+ typeP + "'," + idide+ ",'" + dateCreate + "', '" + dateUpdate + "', " + this.userid + ")";
 		Statement statement = null;
 		ResultSet rs = null;
 		try {
@@ -50,7 +51,7 @@ public class Project {
 			rs = statement.executeQuery(select);
 			while(rs.next()) {
 				this.id= rs.getInt(1);
-				
+
 				//System.out.println("idIDE: "+ idIDE);
 			}
 		} catch (SQLException e) {
@@ -58,14 +59,14 @@ public class Project {
 			e.printStackTrace();
 		}
 	}
-	public Project(String name, String dateCreate, String projectInfo, int idIDE, Connection connect) {
-		super();
-		this.name = name;
-		this.dateCreate = dateCreate;
-		this.projectInfo = projectInfo;
-		this.dateUpdate = dateCreate;
-		this.idIDE = idIDE;
-	}
+//	public Project(String name, String dateCreate, String projectInfo, int idIDE, Connection connect) {
+//		super();
+//		this.name = name;
+//		this.dateCreate = dateCreate;
+//		this.projectInfo = projectInfo;
+//		this.dateUpdate = dateCreate;
+//		this.idIDE = idIDE;
+//	}
 	public Project() {
 		// TODO Auto-generated constructor stub
 	}
@@ -97,7 +98,11 @@ public class Project {
 	public ArrayList<String> getIdLibs() {
 		return idLibs;
 	}
+	@Override
 	public String toString() {
 		return this.name + " -- " + this.typeP;
+	}
+	public static void setUserid(int id) {
+		userid = id;
 	}
 }
