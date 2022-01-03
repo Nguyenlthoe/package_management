@@ -1,0 +1,4 @@
+--patch-module
+edu.packagemanagement=_
+--add-reads
+edu.packagemanagement=ALL-UNNAMED

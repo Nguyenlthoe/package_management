@@ -162,6 +162,7 @@ public class NewProjectController {
 		newTree.prefWidth(displaystackpane.getPrefWidth());
 		displaystackpane.getChildren().add(newTree);
 		MainController.setOpenproject(nPrj);
+		MainController.setLabel();
 		Stage endd = (Stage) createBT.getScene().getWindow();
 		endd.close();
 	}

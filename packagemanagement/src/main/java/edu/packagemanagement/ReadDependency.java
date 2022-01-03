@@ -39,10 +39,12 @@ public class ReadDependency {
 	private Label iconnpm = null;
 	private ArrayList<TreeItem<Library>> libitem = new ArrayList<TreeItem<Library>>();
 	private ArrayList<Library> listlib =  new ArrayList<Library>();
+	private int countdpp = 0;
 	private static String mavenrepo = "C:\\Users\\APC\\.m2\\repository";
 	private static String gradlerepo = "C:\\Users\\APC\\.gradle\\caches\\modules-2\\files-2.1";
 	public TreeView<Library> ReadNPM(Project a, String link, Connection connect) {
 		Library rootP = new Library(a.getName(), "NPM");
+		MainController.setPrjInTree(rootP);
 		PreparedStatement ptsm1 = null, ptsm2 = null, ptsm3 = null, ptsm4 = null;
 		TreeItem<Library> newTree = new TreeItem<Library>(rootP);
 		Tooltip newtoolt = new Tooltip();
@@ -151,12 +153,26 @@ public class ReadDependency {
 		newRoot.getStyleClass().add("tree");
 		String css = this.getClass().getResource("application.css").toExternalForm();
 		newRoot.getStylesheets().add(css);
+		for(int i = 0; i < listlib.size(); i++) {
+			boolean check = true;
+			for(int j = i - 1; j >= 0; j--) {
+				if(listlib.get(i).equals(listlib.get(j))) {
+					check = false;
+					break;
+				}
+			}
+			if(check == true) {
+				countdpp++;
+			}
+		}
+		MainController.countdp = countdpp;
 		//System.out.println(newRoot.toString());
 		return newRoot;
 	}
 
 	public TreeView<Library> ReadMaven(Project a, String link, Connection connect) {
 		Library rootP = new Library(a.getName(), "MAVEN");
+		MainController.setPrjInTree(rootP);
 		TreeItem<Library> newTree = new TreeItem<Library>(rootP);
 		newTree.setExpanded(true);
 		TreeView<Library> newRoot = new TreeView<Library>(newTree);
@@ -285,15 +301,28 @@ public class ReadDependency {
 				}
 			}
 		}
+		for(int i = 0; i < listlib.size(); i++) {
+			boolean check = true;
+			for(int j = i - 1; j >= 0; j--) {
+				if(listlib.get(i).equals(listlib.get(j))) {
+					check = false;
+					break;
+				}
+			}
+			if(check == true) {
+				countdpp++;
+			}
+		}
+		MainController.countdp = countdpp;
 		newRoot.getStyleClass().add("tree");
-		String css = this.getClass().getResource("application.css").toExternalForm();
-		newRoot.getStylesheets().add(css);
+		newRoot.getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
 		//System.out.println(newRoot.toString());
 		return newRoot;
 	}
 
 	public TreeView<Library> ReadGradle(Project a, String link, Connection connect) {
 		Library rootP = new Library(a.getName(), "GRADLE");
+		MainController.setPrjInTree(rootP);
 		TreeItem<Library> newTree = new TreeItem<Library>(rootP);
 		newTree.setExpanded(true);
 		TreeView<Library> newRoot = new TreeView<Library>(newTree);
@@ -476,6 +505,19 @@ public class ReadDependency {
 				queuelib.offer(liblist.get(tmp));
 			}
 		}
+		for(int i = 0; i < listlib.size(); i++) {
+			boolean checkk = true;
+			for(int j = i - 1; j >= 0; j--) {
+				if(listlib.get(i).equals(listlib.get(j))) {
+					checkk = false;
+					break;
+				}
+			}
+			if(checkk == true) {
+				countdpp++;
+			}
+		}
+		MainController.countdp = countdpp;
 		newRoot.getStyleClass().add("tree");
 		String css = this.getClass().getResource("application.css").toExternalForm();
 		newRoot.getStylesheets().add(css);

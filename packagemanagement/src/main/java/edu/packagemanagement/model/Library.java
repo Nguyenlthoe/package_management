@@ -219,7 +219,21 @@ public class Library {
 		return this.name + " ("+ this.version + ")";
 	}
 	public boolean equals(Library y) {
+		if(this.name != null) {
+			if(y.getName().equals(this.name) && y.getVersion().equals(version)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
 		if(y.getArtifactID().equals(this.artifactID)) {
+			if(y.getGroupID() == null) {
+				if(y.getVersion().equals(this.version)) {
+					return true;
+				} else {
+					return false;
+				}
+			}
 			if(y.getGroupID().equals(this.groupID)) {
 				if(y.getVersion().equals(this.version)) {
 					return true;

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -54,8 +55,9 @@ public class MainController {
 	private static int userid;
 	public static boolean updateP = false;
 	public static int countdp;
-	private Label infoPlabel = new Label();
-	private boolean turnviewinfo = false;
+	private static Label infoPlabel = new Label();
+	private static boolean turnviewinfo = false;
+	private static Library prjInTree;
 	// private ArrayList<Button> listbutton = new ArrayList<Button>();
 	// private ArrayList<TreeView<Library>> listtree = new
 	// ArrayList<TreeView<Library>>();
@@ -138,6 +140,7 @@ public class MainController {
 			ReadfromDB rfdb = new ReadfromDB();
 			TreeView<Library> a = rfdb.read(project);
 			displaystackpane.getChildren().add(a);
+			setLabel();
 		});
 		try {
 			connect.close();
@@ -350,30 +353,41 @@ public class MainController {
 				turnviewinfo = true;
 				viewinfobt.setStyle("-fx-background-color: #1CFC8C;");
 			}
-			String select = "select * from IDE where IDE_id = " + openproject.getIdIDE();
-			// System.out.println(project.getIdIDE());
-			String nameide = "";
-			String vside = "";
-			try {
-				Connection connect1 = DriverManager.getConnection(URL);
-				Statement statement = connect1.createStatement();
-				ResultSet rs = statement.executeQuery(select);
-				if (rs.next()) {
-					nameide = rs.getString(2);
-					vside = rs.getString(3);
-				}
-				connect1.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			String b = nameide + "\n		version: " + vside;
+			String b = reIDE();
 			showInfoProject(b);
 		} else {
 			showerror("No Project are opened");
 		}
 	}
-
+	private static String reIDE() {
+		String select = "select * from IDE where IDE_id = " + openproject.getIdIDE();
+		// System.out.println(project.getIdIDE());
+		String nameide = "";
+		String vside = "";
+		try {
+			Connection connect1 = DriverManager.getConnection(URL);
+			Statement statement = connect1.createStatement();
+			ResultSet rs = statement.executeQuery(select);
+			if (rs.next()) {
+				nameide = rs.getString(2);
+				vside = rs.getString(3);
+			}
+			connect1.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String b = nameide + "\n		version: " + vside;
+		return b;
+	}
+	public static void setLabel() {
+		if(turnviewinfo == true) {
+			infoPlabel.setText("		Name: " + openproject.getName() + "\n		Category: " + openproject.getTypeP()
+			+ "\n		Location: " + openproject.getProjectInfo() + "\n		Number of Dependency: " + countdp
+			+ "\n		Created at: " + openproject.getDateCreate() + "\n		Updated at: " + openproject.getDateUpdate()
+			+ "\n		Create by IDE: " + reIDE());
+		}
+	}
 	@FXML
 	public void updateProject() {
 		if (openproject == null) {
@@ -437,9 +451,11 @@ public class MainController {
 				}
 				Connection connect = DriverManager.getConnection(URL);
 				String deletedp = "delete from Project_dependency where ID = " + openproject.getId();
+				String updateDate = "update Project set UpdateAt = '" +  java.time.LocalDate.now() + "' where ID = " + openproject.getId();
 				Statement stm = connect.createStatement();
 				ReadDependency newread = new ReadDependency();
 				stm.execute(deletedp);
+				stm.execute(updateDate);
 				if (openproject.getTypeP().contains("NPM")) {
 					String link = openproject.getProjectInfo().trim() + "\\package.json";
 					TreeView<Library> newtree = newread.ReadNPM(openproject, link, connect);
@@ -768,6 +784,60 @@ public class MainController {
 		Stage st = (Stage) display.getScene().getWindow();
 		st.close();
 	}
+	@FXML
+	private void renameProject() {
+		if(openproject == null) {
+			showerror("No Project are opened");
+		} else {
+			rename();
+		}
+	}
+	private void rename() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Rename Project");
+		alert.setHeaderText(null);
+		alert.setContentText(null);
+		alert.getDialogPane().getStyleClass().add("alert");
+		alert.getDialogPane().getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
+		VBox nvbox = new VBox();
+		Label nameprj = new Label("Enter the name: ");
+		TextField nametfprj = new TextField();
+		alert.getDialogPane().setContent(nvbox);
+		nvbox.getChildren().addAll(nameprj, nametfprj);
+		Optional<ButtonType> result = alert.showAndWait();
+		if(result.get() == ButtonType.OK) {
+			if(nametfprj.getText().trim().equals("")) {
+				showerror("Please type the name");
+				rename();
+			} else {
+				String rename1 = "update Project set NameProject = '" + nametfprj.getText().trim() + "' where ID = " + openproject.getId();
+				String select = "select ID from Project where NameProject = ? and UserID = " + userid;
+				Connection connect = null;
+
+				try {
+					connect = DriverManager.getConnection(URL);
+					Statement sm = connect.createStatement();
+					PreparedStatement ptsm = connect.prepareStatement(select);
+					ptsm.setString(1, nametfprj.getText());
+					ResultSet rs = ptsm.executeQuery();
+					if(rs.next()) {
+						showerror("Duplicate Name Project");
+						rename();
+					} else {
+						sm.execute(rename1);
+						showinfo("Rename Successfully");
+						openproject.setName(nametfprj.getText().trim());
+						setLabel();
+						this.prjInTree.setName(nametfprj.getText().trim());
+						displaystackpane.layout();
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	private void showerror(String a) {
 		Alert alert = new Alert(AlertType.ERROR);
 		alert.setTitle("ERROR");
@@ -789,11 +859,12 @@ public class MainController {
 	private void showInfoProject(String b) {
 //		Alert alert = new Alert(AlertType.INFORMATION);
 //		alert.setTitle(openproject.toString());
-		String infomation = "		Name: " + openproject.getName() + "\n		Category: " + openproject.getTypeP() + "\n		Location: " + openproject.getProjectInfo()
+		String infomation = "		Name: " + openproject.getName() + "\n		Category: " + openproject.getTypeP()
+		+ "\n		Location: " + openproject.getProjectInfo() + "\n		Number of Dependency: " + countdp
 				+ "\n		Created at: " + openproject.getDateCreate() + "\n		Updated at: " + openproject.getDateUpdate()
 				+ "\n		Create by IDE: " + b;
 		infoPlabel.setText(infomation);
-		infoPlabel.setPrefSize(1020, 320);
+		infoPlabel.setPrefSize(1020, 340);
 		infoPlabel.getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
 		infoPlabel.getStyleClass().add("label1");
 		display.getChildren().add(0, infoPlabel);
@@ -806,6 +877,10 @@ public class MainController {
 //		ndialog.getChildren().add(duplicate);
 //		alert.getDialogPane().setContent(ndialog);
 //		alert.showAndWait();
+	}
+
+	public static void setPrjInTree(Library prjInTree) {
+		MainController.prjInTree = prjInTree;
 	}
 
 	public static void setOpenproject(Project openproject) {

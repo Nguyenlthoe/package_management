@@ -1,0 +1,15 @@
+edu\packagemanagement\ReadfromDB.class
+edu\packagemanagement\ManageFileDependency.class
+edu\packagemanagement\model\IDE.class
+edu\packagemanagement\model\Project.class
+edu\packagemanagement\NewProjectController$1.class
+edu\packagemanagement\MainController.class
+edu\packagemanagement\RegisterController.class
+edu\packagemanagement\NewProjectController$2.class
+module-info.class
+edu\packagemanagement\App.class
+edu\packagemanagement\model\Library.class
+edu\packagemanagement\NewProjectController.class
+edu\packagemanagement\LoginController.class
+edu\packagemanagement\NewProjectController$3.class
+edu\packagemanagement\ReadDependency.class

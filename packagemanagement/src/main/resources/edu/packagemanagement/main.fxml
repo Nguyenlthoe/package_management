@@ -17,7 +17,7 @@
             <items>
               <MenuItem mnemonicParsing="fasle" onAction="#newProject" text="New" />
               <MenuItem mnemonicParsing="fasle" onAction="#openProject" text="Open Project" />
-                  <MenuItem mnemonicParsing="false" text="Rename" />
+                  <MenuItem mnemonicParsing="false" onAction="#renameProject" text="Rename" />
               <MenuItem mnemonicParsing="false" text="Close" />
               </items>
           </Menu>

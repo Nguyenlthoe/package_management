@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import edu.packagemanagement.model.*;
+import edu.packagemanagement.model.Library;
+import edu.packagemanagement.model.Project;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
@@ -21,6 +22,7 @@ import javafx.scene.image.ImageView;
 public class ReadfromDB {
 	private ArrayList<TreeItem<Library>> libitem = new ArrayList<TreeItem<Library>>();
 	private ArrayList<Library> listlib =  new ArrayList<Library>();
+	private int countdpp = 0;
 	public TreeView<Library> read(Project a){
 		Library rootP = null;
 		if(a.getTypeP().contains("NPM")) {
@@ -30,6 +32,7 @@ public class ReadfromDB {
 		} else {
 			rootP = new Library(a.getName(), "GRADLE");
 		}
+		MainController.setPrjInTree(rootP);
 		PreparedStatement ptsm1 = null, ptsm2 = null, ptsm3 = null, ptsm4 = null;
 		TreeItem<Library> newTree = new TreeItem<Library>(rootP);
 		String dbURL = "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
@@ -83,6 +86,19 @@ public class ReadfromDB {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		for(int i = 0; i < listlib.size(); i++) {
+			boolean check = true;
+			for(int j = i - 1; j >= 0; j--) {
+				if(listlib.get(i).equals(listlib.get(j))) {
+					check = false;
+					break;
+				}
+			}
+			if(check == true) {
+				countdpp++;
+			}
+		}
+		MainController.countdp = countdpp;
 		newTree.setExpanded(true);
 		TreeView<Library> newRoot = new TreeView<Library>(newTree);
 		newRoot.getStyleClass().add("tree");
