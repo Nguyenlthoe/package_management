@@ -59,14 +59,6 @@ public class Project {
 			e.printStackTrace();
 		}
 	}
-//	public Project(String name, String dateCreate, String projectInfo, int idIDE, Connection connect) {
-//		super();
-//		this.name = name;
-//		this.dateCreate = dateCreate;
-//		this.projectInfo = projectInfo;
-//		this.dateUpdate = dateCreate;
-//		this.idIDE = idIDE;
-//	}
 	public Project() {
 		// TODO Auto-generated constructor stub
 	}

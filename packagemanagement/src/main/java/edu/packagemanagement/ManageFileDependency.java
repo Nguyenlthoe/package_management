@@ -2,7 +2,6 @@ package edu.packagemanagement;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
@@ -16,8 +15,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -232,53 +229,53 @@ public class ManageFileDependency {
 		}
 		return true;
 	}
-	public static boolean addDpNPM(String path, String name, String version) {
-		try {
-			JSONObject obj = (JSONObject) new JSONParser().parse(new FileReader(path));
-			JSONObject dp = (JSONObject) obj.get("dependencies");
-			if(dp == null) {
-				obj.put("dependencies", new JSONObject());
-			}
-			dp = (JSONObject) obj.get("dependencies");
-			dp.put(name.trim(), version.trim());
-			FileWriter file = new FileWriter(path);
-			file.write(obj.toJSONString());
-			file.flush();
-			file.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return true;
-	}
-	public static boolean removeDpNPM(String path, String name) {
-		try {
-			JSONObject obj = (JSONObject) new JSONParser().parse(new FileReader(path));
-			JSONObject dp = (JSONObject) obj.get("dependencies");
-			dp.remove(name.trim());
-			FileWriter file = new FileWriter(path);
-			file.write(obj.toJSONString());
-			file.flush();
-			file.close();
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
-	}
-	public static boolean changeDpNPM(String path, String name, String version) {
-		try {
-			JSONObject obj = (JSONObject) new JSONParser().parse(new FileReader(path));
-			JSONObject dp = (JSONObject) obj.get("dependencies");
-			dp.replace(name, version);
-			FileWriter file = new FileWriter(path);
-			file.write(obj.toJSONString());
-			file.flush();
-			file.close();
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
-	}
+//	public static boolean addDpNPM(String path, String name, String version) {
+//		try {
+//			JSONObject obj = (JSONObject) new JSONParser().parse(new FileReader(path));
+//			JSONObject dp = (JSONObject) obj.get("dependencies");
+//			if(dp == null) {
+//				obj.put("dependencies", new JSONObject());
+//			}
+//			dp = (JSONObject) obj.get("dependencies");
+//			dp.put(name.trim(), version.trim());
+//			FileWriter file = new FileWriter(path);
+//			file.write(obj.toJSONString());
+//			file.flush();
+//			file.close();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return true;
+//	}
+//	public static boolean removeDpNPM(String path, String name) {
+//		try {
+//			JSONObject obj = (JSONObject) new JSONParser().parse(new FileReader(path));
+//			JSONObject dp = (JSONObject) obj.get("dependencies");
+//			dp.remove(name.trim());
+//			FileWriter file = new FileWriter(path);
+//			file.write(obj.toJSONString());
+//			file.flush();
+//			file.close();
+//		} catch (Exception e) {
+//			return false;
+//		}
+//		return true;
+//	}
+//	public static boolean changeDpNPM(String path, String name, String version) {
+//		try {
+//			JSONObject obj = (JSONObject) new JSONParser().parse(new FileReader(path));
+//			JSONObject dp = (JSONObject) obj.get("dependencies");
+//			dp.replace(name, version);
+//			FileWriter file = new FileWriter(path);
+//			file.write(obj.toJSONString());
+//			file.flush();
+//			file.close();
+//		} catch (Exception e) {
+//			return false;
+//		}
+//		return true;
+//	}
 	public static boolean addDpGradle(String path, String name, String group, String version) {
 		Scanner sc =  null;
 		try {

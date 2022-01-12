@@ -13,9 +13,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
+
 import edu.packagemanagement.model.IDE;
 import edu.packagemanagement.model.Library;
 import edu.packagemanagement.model.Project;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -30,6 +36,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -92,6 +99,94 @@ public class MainController {
 		updatef = false;
 		mainstage = (Stage) displaystackpane.getScene().getWindow();
 		showopendialog();
+	}
+	@FXML
+	public void changelocalgradle() {
+		callChangeLocalGradleAlert();
+	}
+	private void callChangeLocalGradleAlert() {
+		String mavenrepo = ReadDependency.getMavenrepo();
+		String oldgradlerepo = ReadDependency.getGradlerepo();
+		Alert alert = new Alert(AlertType.WARNING);
+		alert.setTitle("Change local gralde repo");
+		alert.setHeaderText("Choose invalid local repo, application will be broken");
+		alert.setContentText(null);
+		alert.getDialogPane().getStyleClass().add("alert");
+		alert.getDialogPane().getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		directoryChooser.setInitialDirectory(new File("C:"));
+		VBox nvbox = new VBox();
+		Button chooselink = new Button("Choose directory to local repo");
+		TextField link = new TextField();
+		link.setEditable(false);
+		link.setPromptText(oldgradlerepo);
+		chooselink.setOnAction(e -> {
+			File selectedDirectory = directoryChooser.showDialog(null);
+			String a = selectedDirectory.getAbsoluteFile().toString();
+			link.setText(a);
+		});
+		nvbox.getChildren().addAll(chooselink, link);
+		alert.getDialogPane().setContent(nvbox);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == ButtonType.OK) {
+			String writefile = mavenrepo + "\n" + link.getText();
+			System.out.println(writefile);
+			FileWriter fwt;
+			try {
+				fwt = new FileWriter(new File("linkrepo.txt"));
+				fwt.write(writefile);
+				fwt.flush();
+				showinfo("Successfully");
+				ReadDependency.setGradlerepo(link.getText());
+			} catch (IOException e1) {
+				showerror("change false");
+			}
+
+		}
+	}
+	@FXML
+	public void changelocalmaven() {
+		callChangeLocalMavenAlert();
+	}
+	private void callChangeLocalMavenAlert() {
+		String oldmavenrepo = ReadDependency.getMavenrepo();
+		String gradlerepo = ReadDependency.getGradlerepo();
+		Alert alert = new Alert(AlertType.WARNING);
+		alert.setTitle("Change local maven repo");
+		alert.setHeaderText("Choose invalid local repo, application will be broken");
+		alert.setContentText(null);
+		alert.getDialogPane().getStyleClass().add("alert");
+		alert.getDialogPane().getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		directoryChooser.setInitialDirectory(new File("C:"));
+		VBox nvbox = new VBox();
+		Button chooselink = new Button("Choose directory to local repo");
+		TextField link = new TextField();
+		link.setEditable(false);
+		link.setPromptText(oldmavenrepo);
+		chooselink.setOnAction(e -> {
+			File selectedDirectory = directoryChooser.showDialog(null);
+			String a = selectedDirectory.getAbsoluteFile().toString();
+			link.setText(a);
+		});
+		nvbox.getChildren().addAll(chooselink, link);
+		alert.getDialogPane().setContent(nvbox);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == ButtonType.OK) {
+			String writefile = link.getText() + "\n" + gradlerepo;
+			System.out.println(writefile);
+			FileWriter fwt;
+			try {
+				fwt = new FileWriter(new File("linkrepo.txt"));
+				fwt.write(writefile);
+				fwt.flush();
+				showinfo("Successfully");
+				ReadDependency.setMavenrepo(link.getText());
+			} catch (IOException e1) {
+				showerror("change false");
+			}
+
+		}
 	}
 
 	private static Parent loadFXML(String fxml) throws IOException {
@@ -602,6 +697,22 @@ public class MainController {
 				checknotfill = true;
 				showAddNPM();
 			} else {
+				Connection connect = null;
+				String selectdependence = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID ="
+				+ openproject.getId() + ")";
+				try {
+					connect = DriverManager.getConnection(URL);
+					Statement sm = connect.createStatement();
+					ResultSet rs = sm.executeQuery(selectdependence);
+					while(rs.next()) {
+						if(nametf.getText().trim().equals(rs.getString(2))) {
+							showerror(nametf.getText().trim() + " has already install");
+							return ;
+						}
+					}
+				} catch (Exception e) {
+					showerror("failed to connect database");
+				}
 				try {
 					boolean ok = true;
 					String cmd;
@@ -650,7 +761,26 @@ public class MainController {
 			checknotfill = false;
 		}
 		TextField nametf = new TextField(), grouptf = new TextField(), versiontf = new TextField();
+		Button choosefile  = new Button("Choose file jar");
+		Label linkfilejar = new Label();
+		choosefile.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+				jfc.setDialogTitle("Select file manage dependencies");
+				jfc.setAcceptAllFileFilterUsed(false);
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("jar", "jar");
+				jfc.addChoosableFileFilter(filter);
+				int returnVal = jfc.showOpenDialog(null);
+				linkfilejar.setText(jfc.getSelectedFile().getPath());
+			}
+
+        });
 		nvbox.getChildren().addAll(namelib, nametf, grouplib, grouptf, vslib, versiontf, infolb);
+		if(openproject.getTypeP().contains("MAVEN")) {
+			nvbox.getChildren().addAll(choosefile,linkfilejar);
+		}
 		alert.getDialogPane().setContent(nvbox);
 		Optional<ButtonType> result = alert.showAndWait();
 		if (result.get() == ButtonType.OK) {
@@ -659,8 +789,49 @@ public class MainController {
 				checknotfill = true;
 				showAddMavenorGradle();
 			} else {
+				Connection connect = null;
+				String selectdependence = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID ="
+				+ openproject.getId() + ")";
+				try {
+					connect = DriverManager.getConnection(URL);
+					Statement sm = connect.createStatement();
+					ResultSet rs = sm.executeQuery(selectdependence);
+					while(rs.next()) {
+						if(nametf.getText().trim().equals(rs.getString(2)) && grouptf.getText().trim().equals(rs.getString(3))) {
+							showerror(nametf.getText().trim() + "(" +grouptf.getText().trim() + ") have already install");
+							return ;
+						}
+					}
+				} catch (Exception e) {
+					showerror("failed to connect database");
+				}
 				if (openproject.getTypeP().contains("MAVEN")) {
-					String cmd = "cmd /c mvn clean install";
+					//System.out.print(linkfilejar.getText().trim());
+					if(!linkfilejar.getText().trim().equals("")) {
+						String install = "cmd /c mvn install:install-file -Dfile="
+								+ linkfilejar.getText().trim()
+								+ " -DgroupId=" + grouptf.getText().trim()
+								+ " -DartifactId=" + nametf.getText().trim()
+								+ " -Dversion=" + versiontf.getText().trim() + " -Dpackaging=jar";
+						Process p;
+						try {
+							p = Runtime.getRuntime().exec(install, null,
+									new File(openproject.getProjectInfo().trim()));
+							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+							String line;
+							while (true) {
+								line = r.readLine();
+								if (line == null) {
+									break;
+								}
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+					}
+
 					boolean changeOK = ManageFileDependency.addDpMaven(
 							openproject.getProjectInfo().trim().concat("\\pom.xml"), nametf.getText().trim(),
 							grouptf.getText().trim(), versiontf.getText().trim());

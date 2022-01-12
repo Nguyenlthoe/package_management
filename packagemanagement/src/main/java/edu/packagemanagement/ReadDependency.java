@@ -609,4 +609,20 @@ public class ReadDependency {
 		//System.out.println("done");
 		return listlibrary;
 	}
+
+	public static void setMavenrepo(String mavenrepo) {
+		ReadDependency.mavenrepo = mavenrepo;
+	}
+
+	public static void setGradlerepo(String gradlerepo) {
+		ReadDependency.gradlerepo = gradlerepo;
+	}
+
+	public static String getMavenrepo() {
+		return mavenrepo;
+	}
+
+	public static String getGradlerepo() {
+		return gradlerepo;
+	}
 }

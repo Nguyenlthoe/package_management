@@ -214,7 +214,7 @@ public class Library {
 	@Override
 	public String toString() {
 		if(this.name == null) {
-			return this.artifactID + " (" + this.version + ")";
+			return this.artifactID + " - " + this.version + "(" + this.groupID + ")";
 		}
 		return this.name + " ("+ this.version + ")";
 	}

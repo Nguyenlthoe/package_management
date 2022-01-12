@@ -9,13 +9,10 @@ public class IDE {
 	private String name;
 	private String version;
 	private int idIDE;
-	private static int ideCount = 0;
 	public IDE(String name, String version) {
 		super();
 		this.name = name;
 		this.version = version;
-		this.ideCount++;
-		this.idIDE = this.ideCount;
 	}
 	public IDE(String name, String version, Connection connect) {
 		this.name = name;

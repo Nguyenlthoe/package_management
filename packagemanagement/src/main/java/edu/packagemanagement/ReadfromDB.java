@@ -22,6 +22,7 @@ import javafx.scene.image.ImageView;
 public class ReadfromDB {
 	private ArrayList<TreeItem<Library>> libitem = new ArrayList<TreeItem<Library>>();
 	private ArrayList<Library> listlib =  new ArrayList<Library>();
+	private static String dbURL = "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
 	private int countdpp = 0;
 	public TreeView<Library> read(Project a){
 		Library rootP = null;
@@ -35,7 +36,7 @@ public class ReadfromDB {
 		MainController.setPrjInTree(rootP);
 		PreparedStatement ptsm1 = null, ptsm2 = null, ptsm3 = null, ptsm4 = null;
 		TreeItem<Library> newTree = new TreeItem<Library>(rootP);
-		String dbURL = "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
+
 		String selectdependence = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID =" + a.getId() + ")";
 		String prp1 = "select * from Lib_and_package where Lib_id in(select lib.Lib_id_dependency from Lib_dependency lib where lib.Lib_id = ?)";
 		Connection connect = null;
@@ -106,5 +107,8 @@ public class ReadfromDB {
 		newRoot.getStylesheets().add(css);
 		//System.out.println(newRoot.toString());
 		return newRoot;
+	}
+	public static void setDbURL(String dbURL) {
+		ReadfromDB.dbURL = dbURL;
 	}
 }

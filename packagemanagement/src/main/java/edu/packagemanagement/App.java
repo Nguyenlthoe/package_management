@@ -10,6 +10,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 
 /**
@@ -28,9 +30,20 @@ public class App extends Application {
 			MainController.setURL(url);
 			LoginController.setURL(url);
 			RegisterController.setURL(url);
+			ReadfromDB.setDbURL(url);
 			sc.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("URLSQL.txt was not found");
+		}
+		try {
+			sc = new Scanner(new File("linkrepo.txt"));
+			String mavenrepo = sc.nextLine();
+			String gradlerepo = sc.nextLine();
+			ReadDependency.setGradlerepo(gradlerepo);
+			ReadDependency.setMavenrepo(mavenrepo);
+			sc.close();
+		} catch (FileNotFoundException e) {
+
 		}
 		// scene = new Scene(loadFXML("main"));
 		try {
@@ -44,8 +57,9 @@ public class App extends Application {
 				Project.setUserid(userid);
 				scene = new Scene(loadFXML("main"));
 			}
+			sc.close();
 		} catch (FileNotFoundException e) {
-
+			showerror("User.txt not found");
 		}
 
 		scene.getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
@@ -72,6 +86,14 @@ public class App extends Application {
 		st.setHeight(height);
 		st.setWidth(width);
 		st.centerOnScreen();
+	}
+	private void showerror(String a) {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setTitle("ERROR");
+		alert.setContentText(a);
+		alert.getDialogPane().getStyleClass().add("alert");
+		alert.getDialogPane().getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
+		alert.showAndWait();
 	}
 
 }

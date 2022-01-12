@@ -1,4 +1,5 @@
 edu\packagemanagement\ReadfromDB.class
+edu\packagemanagement\MainController$1.class
 edu\packagemanagement\ManageFileDependency.class
 edu\packagemanagement\model\IDE.class
 edu\packagemanagement\model\Project.class
