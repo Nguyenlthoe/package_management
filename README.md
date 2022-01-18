@@ -9,7 +9,7 @@ Using java, javafx, maven
 + Create database name: QL_LIBRARIES_AND_PACKAGES
 + Create tables according to the following pictures:
 + Table name: IDE
-![image](https://user-images.githubusercontent.com/81378622/149893687-50cfa327-35c4-47d0-99dd-641e0332eb1b.png)
++ ![image](https://user-images.githubusercontent.com/81378622/149893687-50cfa327-35c4-47d0-99dd-641e0332eb1b.png)
 + Table name: Project
 + ![image](https://user-images.githubusercontent.com/81378622/149893729-3d30846c-25e5-4208-9d0c-ec6c81492af2.png)
 + Table name: Lib_and_package
