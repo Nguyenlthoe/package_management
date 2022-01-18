@@ -637,6 +637,9 @@ public class MainController {
 				openproject = null;
 				displaystackpane.getChildren().clear();
 				connect.close();
+				if(turnviewinfo == true) {
+					infoPlabel.setText("");
+				}
 			} catch (SQLException e) {
 				showerror("Connect fail!\nProject has not been deleted.");
 			}
