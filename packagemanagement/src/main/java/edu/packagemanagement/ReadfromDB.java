@@ -111,4 +111,69 @@ public class ReadfromDB {
 	public static void setDbURL(String dbURL) {
 		ReadfromDB.dbURL = dbURL;
 	}
+	public static ArrayList<Project> getListProject(int userid){
+		String selectproject = "select * from Project where UserID = " + userid;
+		Connection connect = null;
+		ArrayList<Project> listP = new ArrayList<Project>();
+		try {
+			connect = DriverManager.getConnection(dbURL);
+			Statement sm = connect.createStatement();
+			ResultSet rs = sm.executeQuery(selectproject);
+			while (rs.next()) {
+				int id = rs.getInt(1);
+				String nameP = rs.getString(2);
+				String Projectinfo = rs.getString(3);
+				String typeP = rs.getString(4);
+				int idIDE = rs.getInt(5);
+				String datecreate = rs.getString(6);
+				String dateupdate = rs.getString(7);
+				Project nproject = new Project(id, nameP, Projectinfo, typeP, idIDE, datecreate, dateupdate);
+				listP.add(nproject);
+			}
+			connect.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return listP;
+	}
+	public static ArrayList<Library> getDpLibraries(int projectid){
+		ArrayList<Library> listLibs = new ArrayList<Library>();
+		Connection connect = null;
+		String selectproject = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID ="
+				+ projectid + ")";
+		try {
+			connect = DriverManager.getConnection(dbURL);
+			Statement sm = connect.createStatement();
+			ResultSet rs = sm.executeQuery(selectproject);
+			while (rs.next()) {
+				Library nlib = new Library(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
+				listLibs.add(nlib);
+			}
+			connect.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return listLibs;
+	}
+	public static String reIDE(int idide) {
+		String select = "select * from IDE where IDE_id = " + idide;
+		String nameide = "";
+		String vside = "";
+		try {
+			Connection connect1 = DriverManager.getConnection(dbURL);
+			Statement statement = connect1.createStatement();
+			ResultSet rs = statement.executeQuery(select);
+			if (rs.next()) {
+				nameide = rs.getString(2);
+				vside = rs.getString(3);
+			}
+			connect1.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String b = nameide + "\n		version: " + vside;
+		return b;
+	}
 }

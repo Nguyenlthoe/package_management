@@ -214,9 +214,13 @@ public class Library {
 	@Override
 	public String toString() {
 		if(this.name == null) {
-			return this.artifactID + " - " + this.version + "(" + this.groupID + ")";
+			if(this.groupID == null) {
+				return this.artifactID + " : " + this.version;
+			} else {
+				return this.artifactID + " : " + this.version + " : " + this.groupID;
+			}
 		}
-		return this.name + " ("+ this.version + ")";
+		return this.name + " : "+ this.version ;
 	}
 	public boolean equals(Library y) {
 		if(this.name != null) {
