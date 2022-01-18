@@ -1,16 +1,15 @@
 package edu.packagemanagement;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import javax.swing.JFileChooser;
@@ -51,8 +50,6 @@ public class MainController {
 	private VBox display = new VBox();
 	@FXML
 		private Button viewinfobt = new Button();
-	//, updatep = new Button(), removedp = new Button(),
-//						changedp = new Button(), adddp = new Button(), deletep = new Button();
 	Stage newPrjStage = new Stage();
 	static Stage mainstage;
 	private static String URL;
@@ -65,9 +62,6 @@ public class MainController {
 	private static Label infoPlabel = new Label();
 	private static boolean turnviewinfo = false;
 	private static Library prjInTree;
-	// private ArrayList<Button> listbutton = new ArrayList<Button>();
-	// private ArrayList<TreeView<Library>> listtree = new
-	// ArrayList<TreeView<Library>>();
 	@FXML
 	public void ReadDependency() {
 
@@ -79,7 +73,6 @@ public class MainController {
 		mainstage = (Stage) displaystackpane.getScene().getWindow();
 		try {
 			NewProjectController nPrjController = new NewProjectController();
-			// nPrjController.setInfo(displaystackpane, vboxexplorer, listbutton, listtree);
 			nPrjController.setInfo(displaystackpane, vboxexplorer);
 			newPrjStage = new Stage();
 			Scene newPrjScene = new Scene(loadFXML("newProject"));
@@ -88,7 +81,6 @@ public class MainController {
 			newPrjStage.initOwner(mainstage);
 			newPrjStage.initModality(Modality.WINDOW_MODAL);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		newPrjStage.show();
@@ -196,31 +188,7 @@ public class MainController {
 
 	private void showopendialog() {
 		ChoiceDialog<Project> dialog = new ChoiceDialog<Project>();
-		// String dbURL =
-		// "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
-		String selectproject = "select * from Project where UserID = " + this.userid;
-		Connection connect = null;
-
-		try {
-			// connect = DriverManager.getConnection(dbURL);
-			connect = DriverManager.getConnection(URL);
-			Statement sm = connect.createStatement();
-			ResultSet rs = sm.executeQuery(selectproject);
-			while (rs.next()) {
-				int id = rs.getInt(1);
-				String nameP = rs.getString(2);
-				String Projectinfo = rs.getString(3);
-				String typeP = rs.getString(4);
-				int idIDE = rs.getInt(5);
-				String datecreate = rs.getString(6);
-				String dateupdate = rs.getString(7);
-				Project nproject = new Project(id, nameP, Projectinfo, typeP, idIDE, datecreate, dateupdate);
-				dialog.getItems().add(nproject);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		dialog.getItems().addAll(ReadfromDB.getListProject(this.userid));
 		dialog.setTitle("open project");
 		dialog.setHeaderText(null);
 		dialog.getDialogPane().getStyleClass().add("dialog");
@@ -231,24 +199,17 @@ public class MainController {
 		Optional<Project> result = dialog.showAndWait();
 		result.ifPresent(project -> {
 			this.openproject = project;
-			// System.out.println(project);
 			ReadfromDB rfdb = new ReadfromDB();
 			TreeView<Library> a = rfdb.read(project);
 			displaystackpane.getChildren().add(a);
 			setLabel();
 		});
-		try {
-			connect.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@FXML
 	public void deleteProject() {
 		if (openproject != null) {
-			showWarningAlert();
+			showWarningAlertwhenDeleteProject();
 		} else {
 			showerror("No Project are opened");
 		}
@@ -271,26 +232,7 @@ public class MainController {
 
 	private void changeversiondialog() {
 		ChoiceDialog<Library> dialog = new ChoiceDialog<Library>();
-		// String dbURL =
-		// "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
-		String selectproject = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID ="
-				+ openproject.getId() + ")";
-		;
-		Connection connect = null;
-
-		try {
-			// connect = DriverManager.getConnection(dbURL);
-			connect = DriverManager.getConnection(URL);
-			Statement sm = connect.createStatement();
-			ResultSet rs = sm.executeQuery(selectproject);
-			while (rs.next()) {
-				Library nlib = new Library(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
-				dialog.getItems().add(nlib);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		dialog.getItems().addAll(ReadfromDB.getDpLibraries(this.openproject.getId()));
 		dialog.setTitle("Change version library and package");
 		dialog.setHeaderText(null);
 		dialog.getDialogPane().getStyleClass().add("dialog");
@@ -302,12 +244,6 @@ public class MainController {
 		result.ifPresent(library -> {
 			showEnter(library);
 		});
-		try {
-			connect.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	private void showEnter(Library lib) {
@@ -327,110 +263,48 @@ public class MainController {
 				lbif.setText("Please enter version!!");
 				alert.show();
 			} else {
+				boolean ok = true;
 				if (openproject.getTypeP().contains("NPM")) {
-					String cmd = "cmd /c npm i " + lib.getArtifactID().trim() + "@" + tfversion.getText().trim();
-					;
-					// System.out.println(cmd);
-					try {
-						Process p = Runtime.getRuntime().exec(cmd, null, new File(openproject.getProjectInfo().trim()));
-						BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-						if (r.readLine() == null) {
-							showerror("Invalid Version!!");
-							showEnter(lib);
-						} else {
-							showinfo("Install sucessfully!!!");
-							updateP = true;
-							updateProject();
-							updateP = false;
-						}
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
+					ok = RuntimeCMD.runNpmInstall(lib.getArtifactID().trim(), tfversion.getText(), openproject.getProjectInfo().trim());
 				} else if (openproject.getTypeP().contains("MAVEN")) {
-					String cmd = "cmd /c mvn clean install";
 					boolean changeOK = ManageFileDependency.changeVersionDpMaven(
 							openproject.getProjectInfo().trim().concat("\\pom.xml"), lib.getArtifactID().trim(),
 							lib.getGroupID().trim(), lib.getVersion().trim(), tfversion.getText().trim());
 					if (changeOK == true) {
-						try {
-							boolean ok = true;
-							Process p = Runtime.getRuntime().exec("cmd /c mvn clean install", null,
-									new File(openproject.getProjectInfo().trim()));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							String line;
-							while (true) {
-								line = r.readLine();
-								if (line == null) {
-									break;
-								}
-								if (line.contains("WARNING") && line.contains(lib.getArtifactID().trim())
-										&& line.contains(tfversion.getText().trim())
-										&& line.contains("no dependency")) {
-									ManageFileDependency.changeVersionDpMaven(
-											openproject.getProjectInfo().trim().concat("\\pom.xml"),
-											lib.getArtifactID().trim(), lib.getGroupID().trim(),
-											tfversion.getText().trim(), lib.getVersion().trim());
-									showerror("INVALID VERSION");
-									showEnter(lib);
-									ok = false;
-									break;
-								}
-								// System.out.println(line);
-							}
-							if (ok == true) {
-								showinfo("Install Successfully!!");
-								updateP = true;
-								updateProject();
-								updateP = false;
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						ok = RuntimeCMD.runMavenInstall(lib.getArtifactID().trim(), lib.getGroupID().trim(), tfversion.getText().trim(), openproject.getProjectInfo().trim());
+						if(ok == false) {
+							ManageFileDependency.changeVersionDpMaven(
+									openproject.getProjectInfo().trim().concat("\\pom.xml"),
+									lib.getArtifactID().trim(), lib.getGroupID().trim(),
+									tfversion.getText().trim(), lib.getVersion().trim());
 						}
 					} else {
 						showerror("Something is wrong");
 					}
 				} else {
-					String cmd = "cmd /c gradle -q dependencies";
 					boolean changeOK = ManageFileDependency.removeorchangeDpGradle(
 							openproject.getProjectInfo().trim().concat("\\build.gradle"), lib.getArtifactID().trim(),
 							lib.getGroupID().trim(), tfversion.getText().trim(), true);
 					if(changeOK == true) {
-						try {
-							boolean ok = true;
-							Process p = Runtime.getRuntime().exec("cmd /c gradle -q dependencies", null, new File(openproject.getProjectInfo().trim()));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-					        String line;
-					        while (true) {
-					            line = r.readLine();
-					            if (line == null) { break; }
-					            if(line.contains(lib.getArtifactID().trim()) && line.contains(lib.getGroupID().trim()) && line.contains(tfversion.getText().trim())
-					            		&& line.contains("FAILED")) {
-					            	ManageFileDependency.removeorchangeDpGradle(
-											openproject.getProjectInfo().trim().concat("\\build.gradle"), lib.getArtifactID().trim(),
-											lib.getGroupID().trim(), lib.getVersion().trim(), true);
-					            	showerror("Invalid version!");
-					            	ok = false;
-					            	break;
-					            }
-					        }
-					        if(ok == true) {
-					        	showinfo("Install successfully!!");
-					        	updateP = true;
-					        	updateProject();
-					        	updateP = false;
-					        }
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						ok = RuntimeCMD.runGradleInstall(lib.getArtifactID(), lib.getGroupID(), tfversion.getText(), openproject.getProjectInfo());
+						if(ok == false) {
+							ManageFileDependency.removeorchangeDpGradle(
+									openproject.getProjectInfo().trim().concat("\\build.gradle"), lib.getArtifactID().trim(),
+									lib.getGroupID().trim(), lib.getVersion().trim(), true);
 						}
 					} else {
 						showerror("Something is wrong");
 					}
-
 				}
+				if(ok == true) {
+		        	updateP = true;
+		        	updateProject();
+		        	updateP = false;
+		        	showinfo("Install successfully!!");
+		        } else {
+		        	showerror("Invalid version!");
+		        	showEnter(lib);
+		        }
 			}
 
 		}
@@ -448,39 +322,18 @@ public class MainController {
 				turnviewinfo = true;
 				viewinfobt.setStyle("-fx-background-color: #1CFC8C;");
 			}
-			String b = reIDE();
+			String b = ReadfromDB.reIDE(openproject.getIdIDE());
 			showInfoProject(b);
 		} else {
 			showerror("No Project are opened");
 		}
-	}
-	private static String reIDE() {
-		String select = "select * from IDE where IDE_id = " + openproject.getIdIDE();
-		// System.out.println(project.getIdIDE());
-		String nameide = "";
-		String vside = "";
-		try {
-			Connection connect1 = DriverManager.getConnection(URL);
-			Statement statement = connect1.createStatement();
-			ResultSet rs = statement.executeQuery(select);
-			if (rs.next()) {
-				nameide = rs.getString(2);
-				vside = rs.getString(3);
-			}
-			connect1.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String b = nameide + "\n		version: " + vside;
-		return b;
 	}
 	public static void setLabel() {
 		if(turnviewinfo == true) {
 			infoPlabel.setText("		Name: " + openproject.getName() + "\n		Category: " + openproject.getTypeP()
 			+ "\n		Location: " + openproject.getProjectInfo() + "\n		Number of Dependency: " + countdp
 			+ "\n		Created at: " + openproject.getDateCreate() + "\n		Updated at: " + openproject.getDateUpdate()
-			+ "\n		Create by IDE: " + reIDE());
+			+ "\n		Create by IDE: " + ReadfromDB.reIDE(openproject.getIdIDE()));
 		}
 	}
 	@FXML
@@ -491,55 +344,14 @@ public class MainController {
 			try {
 				if (updatef == false) {
 					if (openproject.getTypeP().contains("NPM")) {
-						try {
-							Process p = Runtime.getRuntime().exec("cmd /c npm i", null,
-									new File(openproject.getProjectInfo().trim()));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							String line;
-							while (true) {
-								line = r.readLine();
-								if (line == null) {
-									break;
-								}
-								// System.out.println(line);
-							}
-						} catch (IOException e) {
-						}
+						RuntimeCMD.runNpmInstall("", "", openproject.getProjectInfo().trim());
 						updatef = true;
 					} else if (openproject.getTypeP().contains("MAVEN")) {
-						String pathname = openproject.getProjectInfo().trim();
-						try {
-							Process p = Runtime.getRuntime().exec("cmd /c mvn clean install", null, new File(pathname));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							String line;
-							while (true) {
-								line = r.readLine();
-								if (line == null) {
-									break;
-								}
-								// System.out.println(line);
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						RuntimeCMD.runMavenInstall("null","","",openproject.getProjectInfo().trim());
+						updatef = true;
 					} else {
-						String pathname = openproject.getProjectInfo().trim();
-						try {
-							Process p = Runtime.getRuntime().exec("cmd /c gradle -q dependencies", null, new File(pathname));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							String line;
-							while (true) {
-								line = r.readLine();
-								if (line == null) {
-									break;
-								}
-								// System.out.println(line);
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						updatef = true;
+						RuntimeCMD.runGradleInstall("null", "", "", openproject.getProjectInfo());
 
 					}
 
@@ -570,6 +382,7 @@ public class MainController {
 				if (updateP == false) {
 					showinfo("Project has already updated!!");
 				}
+				setLabel();
 				connect.close();
 			} catch (SQLException e) {
 				showerror("Connect fail!!!");
@@ -585,25 +398,7 @@ public class MainController {
 				updateProject();
 			}
 			ChoiceDialog<Library> dialog = new ChoiceDialog<Library>();
-			// String dbURL =
-			// "jdbc:sqlserver://localhost;databaseName=QL_LIBRARIES_AND_PACKAGES;user=sa;password=sa";
-			String selectproject = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID ="
-					+ openproject.getId() + ")";
-			Connection connect = null;
-
-			try {
-				// connect = DriverManager.getConnection(dbURL);
-				connect = DriverManager.getConnection(URL);
-				Statement sm = connect.createStatement();
-				ResultSet rs = sm.executeQuery(selectproject);
-				while (rs.next()) {
-					Library nlib = new Library(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
-					dialog.getItems().add(nlib);
-				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			dialog.getItems().addAll(ReadfromDB.getDpLibraries(this.openproject.getId()));
 			dialog.setTitle("DELETE DEPENDENCY");
 			dialog.setHeaderText(null);
 			dialog.getDialogPane().getStyleClass().add("dialog");
@@ -616,21 +411,11 @@ public class MainController {
 			result.ifPresent(library -> {
 				String pathname = openproject.getProjectInfo().trim();
 				if(openproject.getTypeP().contains("NPM")) {
-					try {
-						Process p = Runtime.getRuntime().exec("cmd /c npm uninstall " + library.getArtifactID().trim(),
-								null, new File(pathname));
-						BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-						String line;
-						while (true) {
-							line = r.readLine();
-							if (line == null) {
-								break;
-							}
-							// System.out.println(line);
-						}
+					boolean checkrm = RuntimeCMD.runNpmRemove(library.getArtifactID().trim(), pathname);
+					if(checkrm == true) {
 						showinfo(library.getArtifactID() + " was removed");
 						updateProject();
-					} catch (IOException e) {
+					} else {
 						showerror(library.getArtifactID() + " has not been deleted");
 					}
 				} else {
@@ -646,8 +431,8 @@ public class MainController {
 								library.getGroupID().trim(), library.getVersion().trim(), false);
 					}
 					if(checkrm == true) {
-						showinfo(library.getArtifactID().trim() + " was removed successfully!");
 						updateProject();
+						showinfo(library.getArtifactID().trim() + " was removed successfully!");
 					} else {
 						showerror("something is wrong");
 					}
@@ -697,45 +482,26 @@ public class MainController {
 				checknotfill = true;
 				showAddNPM();
 			} else {
-				Connection connect = null;
-				String selectdependence = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID ="
-				+ openproject.getId() + ")";
-				try {
-					connect = DriverManager.getConnection(URL);
-					Statement sm = connect.createStatement();
-					ResultSet rs = sm.executeQuery(selectdependence);
-					while(rs.next()) {
-						if(nametf.getText().trim().equals(rs.getString(2))) {
-							showerror(nametf.getText().trim() + " has already install");
-							return ;
-						}
+				ArrayList<Library> listlibs = ReadfromDB.getDpLibraries(openproject.getId());
+				for(int i = 0; i < listlibs.size(); i++) {
+					if(listlibs.get(i).getArtifactID().trim().equals(nametf.getText().trim())) {
+						showerror(nametf.getText().trim() + " has already install");
+						return ;
 					}
-				} catch (Exception e) {
-					showerror("failed to connect database");
 				}
-				try {
-					boolean ok = true;
-					String cmd;
-					if (versiontf.getText().trim().equals("")) {
-						cmd = "cmd /c npm i " + nametf.getText().trim();
-					} else {
-						cmd = "cmd /c npm i " + nametf.getText().trim() + "@" + versiontf.getText().trim();
-					}
-					// System.out.println(cmd);
-					// System.out.println(project.getProjectInfo().trim());
-					Process p = Runtime.getRuntime().exec(cmd, null, new File(openproject.getProjectInfo().trim()));
-					BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-					if (r.readLine() == null) {
-						showerror("Invalid Package!!");
-					} else {
-						updateP = true;
-						updateProject();
-						updateP = false;
-						showinfo("Install sucessfully!!!");
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				boolean checki;
+				if (versiontf.getText().trim().equals("")) {
+					checki = RuntimeCMD.runNpmInstall(nametf.getText().trim(),null, openproject.getProjectInfo().trim());
+				} else {
+					checki = RuntimeCMD.runNpmInstall(nametf.getText().trim(), versiontf.getText().trim(), openproject.getProjectInfo().trim());
+				}
+				if(checki == true) {
+					updateP = true;
+					updateProject();
+					updateP = false;
+					showinfo("Install sucessfully!!!");
+				} else {
+					showerror("Invalid Package!!");
 				}
 			}
 		}
@@ -789,134 +555,71 @@ public class MainController {
 				checknotfill = true;
 				showAddMavenorGradle();
 			} else {
-				Connection connect = null;
-				String selectdependence = "select * from Lib_and_package where Lib_id in(select Lib_id from Project_dependency where ID ="
-				+ openproject.getId() + ")";
-				try {
-					connect = DriverManager.getConnection(URL);
-					Statement sm = connect.createStatement();
-					ResultSet rs = sm.executeQuery(selectdependence);
-					while(rs.next()) {
-						if(nametf.getText().trim().equals(rs.getString(2)) && grouptf.getText().trim().equals(rs.getString(3))) {
-							showerror(nametf.getText().trim() + "(" +grouptf.getText().trim() + ") have already install");
-							return ;
-						}
+				ArrayList<Library> listlibs = ReadfromDB.getDpLibraries(openproject.getId());
+				for(int i = 0; i < listlibs.size(); i++) {
+					if(listlibs.get(i).getArtifactID().equals(nametf.getText().trim()) && listlibs.get(i).getGroupID().equals(grouptf.getText().trim())) {
+						showerror(nametf.getText().trim() + "(" +grouptf.getText().trim() + ") have already install");
+						return;
 					}
-				} catch (Exception e) {
-					showerror("failed to connect database");
 				}
+				boolean ok = true;
 				if (openproject.getTypeP().contains("MAVEN")) {
-					//System.out.print(linkfilejar.getText().trim());
 					if(!linkfilejar.getText().trim().equals("")) {
-						String install = "cmd /c mvn install:install-file -Dfile="
-								+ linkfilejar.getText().trim()
-								+ " -DgroupId=" + grouptf.getText().trim()
-								+ " -DartifactId=" + nametf.getText().trim()
-								+ " -Dversion=" + versiontf.getText().trim() + " -Dpackaging=jar";
-						Process p;
-						try {
-							p = Runtime.getRuntime().exec(install, null,
-									new File(openproject.getProjectInfo().trim()));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							String line;
-							while (true) {
-								line = r.readLine();
-								if (line == null) {
-									break;
-								}
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						boolean installjar = RuntimeCMD.runMavenInstallnewliblocal(linkfilejar.getText(), nametf.getText(), grouptf.getText(),
+																					versiontf.getText(), openproject.getProjectInfo());
+						if(installjar == false) {
+							showerror("can install file");
+							return;
 						}
-
 					}
 
 					boolean changeOK = ManageFileDependency.addDpMaven(
 							openproject.getProjectInfo().trim().concat("\\pom.xml"), nametf.getText().trim(),
 							grouptf.getText().trim(), versiontf.getText().trim());
 					if (changeOK == true) {
-						try {
-							boolean ok = true;
-							Process p = Runtime.getRuntime().exec("cmd /c mvn clean install", null,
-									new File(openproject.getProjectInfo().trim()));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-							String line;
-							while (true) {
-								line = r.readLine();
-								if (line == null) {
-									break;
-								}
-								if (line.contains("WARNING") && line.contains(nametf.getText().trim())
-										&& line.contains(grouptf.getText().trim()) && line.contains("no dependency")) {
-									ManageFileDependency.removeDpMaven(
-											openproject.getProjectInfo().trim().concat("\\pom.xml"),
-											nametf.getText().trim(), grouptf.getText().trim(),
-											versiontf.getText().trim());
-									showerror("INVALID LIBRARY: " + nametf.getText().trim() + " : "  + grouptf.getText().trim()
-				            				+ " : "+ versiontf.getText().trim());
-									ok = false;
-									break;
-								}
-								// System.out.println(line);
-							}
-							if (ok == true) {
-								showinfo("Install Successfully!!");
-								updateP = true;
-								updateProject();
-								updateP = false;
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						ok = RuntimeCMD.runMavenInstall(nametf.getText().trim(), grouptf.getText().trim(), versiontf.getText().trim(), openproject.getProjectInfo().trim());
+						if(ok == false) {
+							ManageFileDependency.removeDpMaven(
+									openproject.getProjectInfo().trim().concat("\\pom.xml"),
+									nametf.getText().trim(), grouptf.getText().trim(),
+									versiontf.getText().trim());
 						}
+					} else {
+						showerror("Something is wrong");
+						return;
 					}
 				} else {
-					String cmd = "cmd /c gradle -q dependencies";
 					boolean changeOK = ManageFileDependency.addDpGradle(
 							openproject.getProjectInfo().trim().concat("\\build.gradle"), nametf.getText().trim(),
 							grouptf.getText().trim(), versiontf.getText().trim());
 					if(changeOK == true) {
-						try {
-							boolean ok = true;
-							Process p = Runtime.getRuntime().exec("cmd /c gradle -q dependencies", null, new File(openproject.getProjectInfo().trim()));
-							BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-					        String line;
-					        while (true) {
-					            line = r.readLine();
-					            if (line == null) { break; }
-					            if(line.contains(nametf.getText().trim()) && line.contains(grouptf.getText().trim()) && line.contains(versiontf.getText().trim())
-					            		&& line.contains("FAILED")) {
-					            	ManageFileDependency.removeorchangeDpGradle(
-											openproject.getProjectInfo().trim().concat("\\build.gradle"), nametf.getText().trim(),
-											grouptf.getText().trim(), versiontf.getText().trim(), false);
-					            	showerror("Invalid library: " + nametf.getText().trim() + " : "  + grouptf.getText().trim()
-					            				+ " : "+ versiontf.getText().trim());
-					            	ok = false;
-					            	break;
-					            }
-					        }
-					        if(ok == true) {
-					        	showinfo("Install successfully!!");
-					        	updateP = true;
-					        	updateProject();
-					        	updateP = false;
-					        }
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						ok = RuntimeCMD.runGradleInstall(nametf.getText(), grouptf.getText(), versiontf.getText(), openproject.getProjectInfo());
+						if(ok == false) {
+			            	ManageFileDependency.removeorchangeDpGradle(
+									openproject.getProjectInfo().trim().concat("\\build.gradle"), nametf.getText().trim(),
+									grouptf.getText().trim(), versiontf.getText().trim(), false);
 						}
 					} else {
-						showerror("Something is wrong");
+						showerror("Something is wrong"); return;
 					}
 				}
+
+		        if(ok == true) {
+		        	updateP = true;
+		        	updateProject();
+		        	updateP = false;
+		        	showinfo("Install successfully!!");
+		        } else {
+		        	showerror("Invalid library: " + nametf.getText().trim() + " : "  + grouptf.getText().trim()
+            				+ " : "+ versiontf.getText().trim());
+		        }
 			}
 		} else {
 
 		}
 	}
 
-	private void showWarningAlert() {
+	private void showWarningAlertwhenDeleteProject() {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setTitle("Delete project!!");
 		alert.setHeaderText("Project after deleting cannot be restored. \nAre you sure to delete this project?");
@@ -949,7 +652,6 @@ public class MainController {
 			fwt.write("");
 			fwt.flush();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		Stage st = (Stage) display.getScene().getWindow();
@@ -1028,8 +730,6 @@ public class MainController {
 	}
 
 	private void showInfoProject(String b) {
-//		Alert alert = new Alert(AlertType.INFORMATION);
-//		alert.setTitle(openproject.toString());
 		String infomation = "		Name: " + openproject.getName() + "\n		Category: " + openproject.getTypeP()
 		+ "\n		Location: " + openproject.getProjectInfo() + "\n		Number of Dependency: " + countdp
 				+ "\n		Created at: " + openproject.getDateCreate() + "\n		Updated at: " + openproject.getDateUpdate()
@@ -1039,15 +739,6 @@ public class MainController {
 		infoPlabel.getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
 		infoPlabel.getStyleClass().add("label1");
 		display.getChildren().add(0, infoPlabel);
-//		VBox ndialog = new VBox();
-//		ndialog.setPrefWidth(500);
-//		ndialog.setPrefHeight(200);
-//		Label duplicate = new Label(infomation);
-//		duplicate.getStylesheets().add(this.getClass().getResource("application.css").toExternalForm());
-//		duplicate.getStyleClass().add("info");
-//		ndialog.getChildren().add(duplicate);
-//		alert.getDialogPane().setContent(ndialog);
-//		alert.showAndWait();
 	}
 
 	public static void setPrjInTree(Library prjInTree) {

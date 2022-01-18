@@ -37,7 +37,7 @@ import javafx.scene.image.ImageView;
 public class ReadDependency {
 	private ImageView images = null;
 	private Label iconnpm = null;
-	private ArrayList<TreeItem<Library>> libitem = new ArrayList<TreeItem<Library>>();
+	private ArrayList<TreeItem<Library>> libitem = new ArrayList<TreeItem<Library>>(); // save list tree item library to insert sub tree library
 	private ArrayList<Library> listlib =  new ArrayList<Library>();
 	private int countdpp = 0;
 	private static String mavenrepo = "C:\\Users\\APC\\.m2\\repository";
